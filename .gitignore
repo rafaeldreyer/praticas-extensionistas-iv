@@ -1,0 +1,7 @@
+# Arquivos temporários de renderização e validação do PDF
+tmp/
+
+# Arquivos locais de ambiente/editor
+.DS_Store
+.idea/
+.vscode/
