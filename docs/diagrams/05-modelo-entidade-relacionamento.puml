@@ -1,0 +1,60 @@
+@startuml
+title Controle de Frota — Modelo Entidade-Relacionamento
+hide circle
+skinparam linetype ortho
+
+entity "usuario" as usuario {
+  * id : BIGINT <<PK>>
+  --
+  nome : VARCHAR(120)
+  email : VARCHAR(150) <<UK>>
+  senha_hash : VARCHAR(255)
+  perfil : ENUM
+  ativo : BOOLEAN
+}
+
+entity "funcionario" as funcionario {
+  * id : BIGINT <<PK>>
+  --
+  nome : VARCHAR(120)
+  matricula : VARCHAR(30) <<UK>>
+  cpf : CHAR(11) <<UK>>
+  numero_cnh : VARCHAR(20) <<UK>>
+  categoria_cnh : VARCHAR(5)
+  validade_cnh : DATE
+  ativo : BOOLEAN
+}
+
+entity "veiculo" as veiculo {
+  * id : BIGINT <<PK>>
+  --
+  placa : CHAR(7) <<UK>>
+  tipo : ENUM
+  marca : VARCHAR(60)
+  modelo : VARCHAR(80)
+  categoria_cnh_minima : VARCHAR(5)
+  quilometragem_atual : DECIMAL(12,1)
+  status : ENUM
+}
+
+entity "saida_veiculo" as saida {
+  * id : BIGINT <<PK>>
+  --
+  veiculo_id : BIGINT <<FK>>
+  motorista_id : BIGINT <<FK>>
+  registrado_por_id : BIGINT <<FK>>
+  encerrado_por_id : BIGINT <<FK, nullable>>
+  data_hora_saida : DATETIME
+  quilometragem_saida : DECIMAL(12,1)
+  destino : VARCHAR(255)
+  data_hora_retorno : DATETIME <<nullable>>
+  quilometragem_retorno : DECIMAL(12,1) <<nullable>>
+  status : ENUM
+  veiculo_em_uso_id : BIGINT <<UK gerada>>
+}
+
+veiculo ||--o{ saida : utilizado em
+funcionario ||--o{ saida : motorista
+usuario ||--o{ saida : registra abertura
+usuario ||--o{ saida : registra encerramento
+@enduml

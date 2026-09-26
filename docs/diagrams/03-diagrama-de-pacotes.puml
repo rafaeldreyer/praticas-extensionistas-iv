@@ -1,0 +1,62 @@
+@startuml
+title Controle de Frota — Diagrama UML de Pacotes (Arquitetura da Aplicação)
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam linetype ortho
+
+package "Apresentação\n(PHP Views / HTTP)" as presentation {
+  [LoginController]
+  [SaidaController]
+  [CadastroController]
+  [RelatorioController]
+  [Templates / Views]
+}
+
+package "Aplicação\n(Casos de Uso)" as appLayer {
+  [AutenticacaoService]
+  [RegistrarSaidaService]
+  [EncerrarSaidaService]
+  [GerenciarCadastrosService]
+  [RelatoriosService]
+}
+
+package "Domínio\n(Regras de Negócio)" as domain {
+  [Usuario]
+  [Funcionario]
+  [Veiculo]
+  [SaidaVeiculo]
+  [PerfilUsuario]
+  [StatusVeiculo]
+  [StatusSaida]
+  [Interfaces de Repositório]
+}
+
+package "Infraestrutura\n(Implementações Técnicas)" as infrastructure {
+  [SessaoPHP]
+  [PasswordHasher]
+  [MySqlConnection / PDO]
+  [UsuarioRepositoryMySql]
+  [FuncionarioRepositoryMySql]
+  [VeiculoRepositoryMySql]
+  [SaidaRepositoryMySql]
+}
+
+database "MySQL\ncontrole_frota" as mysql
+
+presentation ..> appLayer : invoca
+appLayer ..> domain : aplica regras e usa interfaces
+appLayer ..> infrastructure : inicia transação
+infrastructure ..> domain : implementa repositórios
+infrastructure --> mysql : SQL / PDO
+
+presentation -[hidden]right-> appLayer
+domain -[hidden]right-> infrastructure
+presentation -[hidden]down-> domain
+appLayer -[hidden]down-> infrastructure
+
+note right of appLayer
+RegistrarSaidaService valida CNH, categoria e disponibilidade.
+Ele grava a saída e altera o veículo na mesma transação.
+end note
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+title Controle de Frota — Sequência: Registrar Saída e Retorno
+actor Porteiro
+boundary "Tela de Portaria" as tela
+control "SaidaController" as controller
+control "RegistrarSaidaService" as service
+database "MySQL" as db
+
+== Abertura ==
+Porteiro -> tela : informa motorista, veículo, destino e km de saída
+tela -> controller : POST /saidas
+controller -> service : registrar(dados, porteiro)
+service -> db : BEGIN
+service -> db : consulta funcionário/CNH
+service -> db : consulta veículo (FOR UPDATE)
+alt CNH válida e veículo disponível
+  service -> db : INSERT saida_veiculo(status=ABERTA)
+  service -> db : UPDATE veiculo SET status=EM_USO
+  service -> db : COMMIT
+  service --> controller : saída aberta
+  controller --> tela : confirmação/protocolo
+else CNH vencida, categoria inválida ou veículo indisponível
+  service -> db : ROLLBACK
+  service --> controller : erro de validação
+  controller --> tela : informa impedimento
+end
+
+== Retorno ==
+Porteiro -> tela : informa saída aberta, hora e km de retorno
+tela -> controller : PATCH /saidas/{id}/encerrar
+controller -> service : encerrar(id, dados, porteiro)
+service -> db : BEGIN
+service -> db : consulta saída ABERTA e veículo (FOR UPDATE)
+alt km retorno >= km saída
+  service -> db : UPDATE saida_veiculo SET status=ENCERRADA, ...
+  service -> db : UPDATE veiculo SET km atual=?, status=DISPONIVEL
+  service -> db : COMMIT
+  service --> controller : saída encerrada
+  controller --> tela : veículo liberado
+else quilometragem inválida
+  service -> db : ROLLBACK
+  service --> controller : erro de validação
+  controller --> tela : informa erro
+end
+@enduml

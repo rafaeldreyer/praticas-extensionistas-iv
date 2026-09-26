@@ -1,0 +1,40 @@
+@startuml
+title Controle de Frota — Diagrama de Casos de Uso
+left to right direction
+skinparam packageStyle rectangle
+
+actor Administrador as admin
+actor Porteiro as porteiro
+
+rectangle "Sistema de Controle de Frota" {
+  usecase "Autenticar-se" as UCLogin
+  usecase "Gerenciar usuários\ne perfis" as UCGerUsuarios
+  usecase "Gerenciar funcionários\ne CNHs" as UCGerFuncionarios
+  usecase "Gerenciar veículos" as UCGerVeiculos
+  usecase "Consultar veículo, motorista\ne saída" as UCConsultar
+  usecase "Registrar saída" as UCAbrir
+  usecase "Validar disponibilidade\ndo veículo" as UCDisponibilidade
+  usecase "Validar CNH e categoria\ndo motorista" as UCCNH
+  usecase "Encerrar saída" as UCEncerrar
+  usecase "Atualizar quilometragem\ne disponibilidade" as UCAtualizar
+  usecase "Emitir relatórios\nde utilização" as UCRelatorios
+}
+
+admin --> UCLogin
+admin --> UCGerUsuarios
+admin --> UCGerFuncionarios
+admin --> UCGerVeiculos
+admin --> UCConsultar
+admin --> UCAbrir
+admin --> UCEncerrar
+admin --> UCRelatorios
+
+porteiro --> UCLogin
+porteiro --> UCConsultar
+porteiro --> UCAbrir
+porteiro --> UCEncerrar
+
+UCAbrir .> UCDisponibilidade : <<include>>
+UCAbrir .> UCCNH : <<include>>
+UCEncerrar .> UCAtualizar : <<include>>
+@enduml

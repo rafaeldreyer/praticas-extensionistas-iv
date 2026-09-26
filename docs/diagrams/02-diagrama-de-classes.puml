@@ -1,0 +1,88 @@
+@startuml
+title Controle de Frota — Diagrama de Classes do Domínio
+skinparam classAttributeIconSize 0
+hide empty members
+
+package "Domínio" {
+  enum PerfilUsuario {
+    ADMINISTRADOR
+    PORTEIRO
+  }
+  enum StatusVeiculo {
+    DISPONIVEL
+    EM_USO
+    MANUTENCAO
+    INATIVO
+  }
+  enum StatusSaida {
+    ABERTA
+    ENCERRADA
+    CANCELADA
+  }
+
+  class Usuario {
+    +id: int
+    +nome: string
+    +email: string
+    -senhaHash: string
+    +perfil: PerfilUsuario
+    +ativo: bool
+    +autenticar(senha: string): bool
+  }
+
+  class Funcionario {
+    +id: int
+    +nome: string
+    +matricula: string
+    +cpf: string
+    +numeroCnh: string
+    +categoriaCnh: string
+    +validadeCnh: date
+    +ativo: bool
+    +cnhValida(data: date): bool
+    +habilitadoPara(categoria: string): bool
+  }
+
+  class Veiculo {
+    +id: int
+    +placa: string
+    +marca: string
+    +modelo: string
+    +anoFabricacao: int
+    +tipo: string
+    +categoriaCnhMinima: string
+    +quilometragemAtual: decimal
+    +status: StatusVeiculo
+    +estaDisponivel(): bool
+    +liberarParaUso(): void
+    +tornarDisponivel(km: decimal): void
+  }
+
+  class SaidaVeiculo {
+    +id: int
+    +dataHoraSaida: datetime
+    +quilometragemSaida: decimal
+    +destino: string
+    +observacaoSaida: text
+    +dataHoraRetorno: datetime
+    +quilometragemRetorno: decimal
+    +observacaoRetorno: text
+    +status: StatusSaida
+    +abrir(): void
+    +encerrar(dataHora: datetime, km: decimal): void
+    +calcularDistancia(): decimal
+  }
+}
+
+Usuario "1" --> "0..*" SaidaVeiculo : registra saída >
+Usuario "1" --> "0..*" SaidaVeiculo : registra retorno >
+Funcionario "1" <-- "0..*" SaidaVeiculo : motorista
+Veiculo "1" <-- "0..*" SaidaVeiculo : veículo
+
+note right of SaidaVeiculo
+{restrições}
+- saída ABERTA exige veículo DISPONIVEL
+- retorno.km >= saída.km
+- só uma saída ABERTA por veículo
+end note
+@enduml
