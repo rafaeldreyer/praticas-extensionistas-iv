@@ -1,0 +1,74 @@
+@startuml
+title Controle de Frota — Diagrama de Arquitetura de Implantação
+
+skinparam backgroundColor white
+skinparam defaultFontName Helvetica
+skinparam shadowing false
+skinparam node {
+  BackgroundColor #F2F2F2
+  BorderColor black
+  FontStyle bold
+}
+skinparam database {
+  BackgroundColor #F2F2F2
+  BorderColor black
+}
+skinparam cloud {
+  BackgroundColor white
+  BorderColor black
+}
+skinparam artifact {
+  BackgroundColor #FFFFFF
+  BorderColor black
+}
+skinparam folder {
+  BackgroundColor #F2F2F2
+  BorderColor black
+}
+skinparam actorStyle awesome
+skinparam note {
+  BackgroundColor #FEFFDD
+  BorderColor black
+}
+
+actor "Porteiro /\nAdministrador" as usuario
+
+cloud "Internet" as internet
+
+node "Servidor de Aplicação\n(VPS Ubuntu 24.04 LTS — Docker Host)" as appserver {
+  node "Container \"web\"\nApache 2.4 + PHP 8.3-FPM" as webcontainer {
+    artifact "Aplicação Controle de Frota\n(Apresentação / Aplicação / Domínio)" as app
+  }
+}
+
+node "Servidor de Banco de Dados\n(mesma VPS, rede interna Docker)" as dbserver {
+  node "Container \"db\"\nMySQL 8.0" as dbcontainer {
+    database "controle_frota" as db
+  }
+}
+
+node "Volume Docker\n(dados persistentes)" as volume
+
+usuario --> internet : HTTPS (443)
+internet --> webcontainer : HTTPS (443)\nProxy reverso / TLS (Nginx ou\nTraefik na frente do Apache)
+webcontainer --> dbcontainer : SQL / PDO\nporta 3306 (rede interna\ndocker "controle_frota_net")
+dbcontainer --> volume : grava/lê dados
+
+note right of appserver
+  Provedor sugerido: VPS em nuvem
+  (ex.: Oracle Cloud Always Free —
+  instância ARM Ampere, ou Hetzner /
+  DigitalOcean equivalente).
+  Backups automáticos do volume
+  e certificado TLS via Let's Encrypt.
+end note
+
+note bottom of dbserver
+  Banco e aplicação isolados em
+  containers distintos, comunicando-se
+  apenas pela rede interna do Docker
+  Compose (sem exposição pública
+  da porta 3306).
+end note
+
+@enduml
