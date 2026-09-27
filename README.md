@@ -33,6 +33,8 @@ Controlar a utilização de carros, caminhões e motocicletas. Antes de liberar 
 | `docs/diagrams/03-diagrama-de-pacotes.puml` | Arquitetura lógica em camadas/módulos. |
 | `docs/diagrams/04-sequencia-saida-retorno.puml` | Fluxo principal de abertura e encerramento. |
 | `docs/diagrams/05-modelo-entidade-relacionamento.puml` | Modelo lógico do banco. |
+| `docs/diagrams/06-diagrama-de-implantacao.puml` | Arquitetura de implantação (VPS, containers web/db, volume). |
+| `docs/diagrams/07-diagrama-devops.puml` | Arquitetura DevOps / pipeline CI-CD (GitHub Actions, GHCR, deploy). |
 | `database/schema.sql` | DDL MySQL 8+ para criação do banco. |
 | `docs/MODELAGEM.md` | Decisões e instruções para gerar as imagens. |
 
