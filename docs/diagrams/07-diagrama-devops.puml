@@ -1,0 +1,74 @@
+@startuml
+title Controle de Frota — Diagrama de Arquitetura DevOps (Pipeline CI/CD)
+
+skinparam backgroundColor white
+skinparam defaultFontName Helvetica
+skinparam shadowing false
+skinparam node {
+  BackgroundColor #F2F2F2
+  BorderColor black
+  FontStyle bold
+}
+skinparam component {
+  BackgroundColor #F2F2F2
+  BorderColor black
+}
+skinparam database {
+  BackgroundColor #F2F2F2
+  BorderColor black
+}
+skinparam folder {
+  BackgroundColor #F2F2F2
+  BorderColor black
+}
+skinparam actorStyle awesome
+skinparam note {
+  BackgroundColor #FEFFDD
+  BorderColor black
+}
+
+actor "Desenvolvedor" as dev
+
+node "GitHub" as github {
+  component "Repositório\npraticas-extensionistas-iv\n(branch main)" as repo
+  component "GitHub Actions\n(workflow CI/CD)" as actions
+  database "GitHub Container\nRegistry (GHCR)" as ghcr
+}
+
+node "Servidor de Produção (VPS)" as prodserver {
+  component "Docker Compose\n(serviços: web + db)" as compose
+  component "Aplicação em execução\n(Apache/PHP-FPM + MySQL)" as running
+}
+
+dev --> repo : git push (main) /\npull request
+
+repo --> actions : dispara o workflow\n(on: push, pull_request)
+
+actions --> actions : Job 1 — Build & Test\n(composer install,\nphpunit, phpcs/phpstan)
+
+actions --> ghcr : Job 2 — Build & Push\n(docker build -t app:sha\ndocker push)
+
+actions --> prodserver : Job 3 — Deploy\n(SSH action:\ndocker compose pull && up -d)
+
+ghcr --> compose : pull da imagem\nmais recente
+
+compose --> running : sobe/atualiza os\ncontainers (rolling update)
+
+note bottom of actions
+  Pipeline (.github/workflows/ci-cd.yml):
+  1) lint + testes automatizados
+  2) build da imagem Docker da aplicação
+  3) push para o GHCR (registry privado)
+  4) deploy remoto via SSH na VPS,
+     reiniciando os containers com a
+     nova imagem (docker compose up -d)
+end note
+
+note right of prodserver
+  Observabilidade: docker logs / healthcheck
+  do Compose; alertas simples via
+  GitHub Actions (job de deploy falha
+  = notificação por e-mail ao time).
+end note
+
+@enduml
